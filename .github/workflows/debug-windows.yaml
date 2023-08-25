@@ -1,0 +1,30 @@
+name: Debug Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ci-checks:
+    name: Debug Actions Cache
+    runs-on: "windows-latest"
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: yarn
+        id: setup-node
+      - name: Get Node Version
+        run: echo "::set-output name=version::$(node -v)"
+        id: node-version
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-${{ steps.node-version.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+      - name: Install Packages
+        run: yarn install --frozen-lockfile --network-timeout 100000
